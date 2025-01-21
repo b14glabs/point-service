@@ -5,6 +5,7 @@ import express, { Express, Router } from 'express'
 import mongoose from 'mongoose'
 import morgan from 'morgan'
 import Web3 from 'web3'
+import snapshotRoutes from './routes/snapshotRoutes'
 
 dotenv.config()
 
@@ -17,6 +18,7 @@ app.use(cors())
 app.use(morgan(':method :url :status - :response-time ms'))
 
 const router: Router = Router()
+router.use('/point', snapshotRoutes)
 app.use('/restake', router)
 
 mongoose

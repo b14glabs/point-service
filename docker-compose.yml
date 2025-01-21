@@ -1,0 +1,14 @@
+version: "3"
+
+services:
+  point-service:
+    container_name: point-service
+    command: node ./dist/index.js
+    restart: always
+    build:
+      context: "."
+      dockerfile: Dockerfile
+    ports:
+      - 3001:3001
+    environment:
+      MONGO_URL:
