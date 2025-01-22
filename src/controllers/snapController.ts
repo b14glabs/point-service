@@ -62,6 +62,10 @@ export const getHistory = async (
 ): Promise<void> => {
   try {
     const page = parseInt(req.query.page as string) || 1
+    if (isNaN(page) || page < 1) {
+      res.status(400).send({ error: 'Invalid page number' })
+      return
+    }
     const limit = 10
     if (!Web3.utils.isAddress(req.params.holder)) {
       res.status(400).json({ error: 'holder is invalid address' })
@@ -97,7 +101,10 @@ export const getLeaderboard = async (
   try {
     const page = parseInt(req.query.page as string) || 1
     const limit = 10
-
+    if (isNaN(page) || page < 1) {
+      res.status(400).send({ error: 'Invalid page number' })
+      return
+    }
     const snapshotHolders = await getHolders()
 
     const marketplaceStakers = await findMarketplaceStakers()
