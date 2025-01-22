@@ -1,0 +1,67 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: point-service
+  labels:
+    app: point-service
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: point-service
+  strategy:
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 1
+    type: RollingUpdate
+  minReadySeconds: 5
+  template:
+    metadata:
+      labels:
+        app: point-service
+    spec:
+      containers:
+        - name: point-service
+          image: easyprompt2023/point-service:latest
+          command: ['node']
+          args: ['dist/index.js']
+          imagePullPolicy: Always
+          env:
+            - name: MONGO_URL
+              valueFrom:
+                secretKeyRef:
+                  name: point-service
+                  key: MONGO_URL
+      imagePullSecrets:
+        - name: cred-docker-hub
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: point-service
+spec:
+  ports:
+    - name: http
+      port: 3001
+      targetPort: 3001
+  selector:
+    app: point-service
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: point-service-ingress
+
+spec:
+  ingressClassName: nginx
+  rules:
+    - host: api.b14g.xyz
+      http:
+        paths:
+          - pathType: Prefix
+            path: '/restake'
+            backend:
+              service:
+                name: point-service
+                port:
+                  number: 3001
