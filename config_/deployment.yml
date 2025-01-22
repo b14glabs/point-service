@@ -59,7 +59,7 @@ spec:
       http:
         paths:
           - pathType: Prefix
-            path: '/restake'
+            path: '/restake/point'
             backend:
               service:
                 name: point-service
