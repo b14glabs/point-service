@@ -9,6 +9,7 @@ import {
   getPointLeaderboard,
   getSnapshotRecords,
 } from '../services'
+import { Snapshot } from '../models'
 
 export const getTotalPoint = async (
   req: Request,
@@ -62,20 +63,31 @@ export const getHistory = async (
 ): Promise<void> => {
   try {
     const page = parseInt(req.query.page as string) || 1
+    const limit = 10
     if (isNaN(page) || page < 1) {
       res.status(400).send({ error: 'Invalid page number' })
       return
     }
-    const limit = 10
+    const type = req.query.type as string
+    const query = type
+      ? {
+          holder: { $regex: `^${req.params.holder}$`, $options: 'i' },
+          type: {
+            $eq: type,
+          },
+        }
+      : {
+          holder: { $regex: `^${req.params.holder}$`, $options: 'i' },
+        }
+
     if (!Web3.utils.isAddress(req.params.holder)) {
       res.status(400).json({ error: 'holder is invalid address' })
       return
     }
-    const holder = req.params.holder.toLowerCase()
 
     const result = await findRecordsWithPagination(
       {
-        holder: { $regex: `^${holder}$`, $options: 'i' },
+        ...query,
       },
       {
         sortBy: 'createdAt:desc',
@@ -85,7 +97,7 @@ export const getHistory = async (
     )
 
     res.status(200).json({
-      holder,
+      holder: req.params.holder,
       ...result,
     })
   } catch (error) {
