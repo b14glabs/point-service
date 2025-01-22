@@ -89,7 +89,3 @@ export const getPointLeaderboard = (page: number, limit: number) => {
     },
   ])
 }
-
-export const createSnapshots = (docs: ISnapshot[]) => {
-  return Snapshot.insertMany(docs)
-}
