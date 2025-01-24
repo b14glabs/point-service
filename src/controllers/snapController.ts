@@ -77,8 +77,7 @@ export const getHistory = async (
             $eq: type,
             ...(type === 'marketplace-claim-reward' && {
             isBtcClaim: { $eq: isBtcClaim },
-
-          },
+          }),
         }
       : {
           holder: { $regex: `^${req.params.holder}$`, $options: 'i' },
