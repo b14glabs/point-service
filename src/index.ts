@@ -5,7 +5,7 @@ import express, { Express, Router } from 'express'
 import mongoose from 'mongoose'
 import morgan from 'morgan'
 import Web3 from 'web3'
-import snapshotRoutes from './routes/snapshotRoutes'
+import pointRoutes from './routes/pointRoutes'
 
 dotenv.config()
 
@@ -18,11 +18,11 @@ app.use(cors())
 app.use(morgan(':method :url :status - :response-time ms'))
 
 const router: Router = Router()
-router.use('/point', snapshotRoutes)
+router.use('/point', pointRoutes)
 app.use('/restake', router)
 
 mongoose
-  .connect(process.env.MONGO_URL, { dbName: 'btc_restaking' })
+  .connect(process.env.MONGO_URL, { dbName: 'user' })
   .then(() => {
     console.log('[DB]: Connected to MongoDB')
     app.listen(port, async () => {

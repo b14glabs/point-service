@@ -1,14 +1,14 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: point-service
+  name: point-service-staging
   labels:
-    app: point-service
+    app: point-service-staging
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: point-service
+      app: point-service-staging
   strategy:
     rollingUpdate:
       maxSurge: 1
@@ -18,11 +18,11 @@ spec:
   template:
     metadata:
       labels:
-        app: point-service
+        app: point-service-staging
     spec:
       containers:
-        - name: point-service
-          image: easyprompt2023/point-service:latest
+        - name: point-service-staging
+          image: easyprompt2023/point-service-staging:latest
           command: ['node']
           args: ['dist/index.js']
           imagePullPolicy: Always
@@ -30,12 +30,12 @@ spec:
             - name: MONGO_URL
               valueFrom:
                 secretKeyRef:
-                  name: point-service
+                  name: point-service-staging
                   key: MONGO_URL
             - name: VERIFY_PUBLIC_KEY
               valueFrom:
                 secretKeyRef:
-                  name: point-service
+                  name: point-service-staging
                   key: VERIFY_PUBLIC_KEY
       imagePullSecrets:
         - name: cred-docker-hub
@@ -43,30 +43,30 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  name: point-service
+  name: point-service-staging
 spec:
   ports:
     - name: http
       port: 3001
       targetPort: 3001
   selector:
-    app: point-service
+    app: point-service-staging
 ---
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
-  name: point-service-ingress
+  name: point-service-staging-ingress
 
 spec:
   ingressClassName: nginx
   rules:
-    - host: api.b14g.xyz
+    - host: api-staging.b14g.xyz
       http:
         paths:
           - pathType: Prefix
             path: '/restake/point'
             backend:
               service:
-                name: point-service
+                name: point-service-staging
                 port:
                   number: 3001
