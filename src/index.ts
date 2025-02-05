@@ -6,6 +6,7 @@ import mongoose from 'mongoose'
 import morgan from 'morgan'
 import Web3 from 'web3'
 import snapshotRoutes from './routes/snapshotRoutes'
+import referralRoutes from './routes/referralRoutes'
 
 dotenv.config()
 
@@ -19,6 +20,7 @@ app.use(morgan(':method :url :status - :response-time ms'))
 
 const router: Router = Router()
 router.use('/point', snapshotRoutes)
+router.use('/referral', referralRoutes)
 app.use('/restake', router)
 
 mongoose
