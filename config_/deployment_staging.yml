@@ -32,6 +32,16 @@ spec:
                 secretKeyRef:
                   name: point-service-staging
                   key: MONGO_URL
+            - name: RPC_URL
+              valueFrom:
+                secretKeyRef:
+                  name: point-service-staging
+                  key: RPC_URL
+            - name: MARKETPLACE_ENDPOINT_API
+              valueFrom:
+                secretKeyRef:
+                  name: point-service-staging
+                  key: MARKETPLACE_ENDPOINT_API
             - name: VERIFY_PUBLIC_KEY
               valueFrom:
                 secretKeyRef:
