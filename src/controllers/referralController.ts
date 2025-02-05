@@ -25,6 +25,10 @@ export const createRef = async (req: Request, res: Response) => {
     let body: CreateRefBody = req.body
     let { evmAddress } = body
 
+    if (!Web3.utils.isAddress(evmAddress)) {
+      res.status(400).json({ error: 'Address is invalid' })
+      return
+    }
     const user = await findUser({ evmAddress: evmAddress.toLocaleLowerCase() })
 
     if (user?.code) {
@@ -138,7 +142,7 @@ export const getCheckAddress = async (
     const address = String(req.query.address).toLowerCase()
 
     const isExistUser = await findUser({ evmAddress: address })
-
+    
     return res.status(200).json({
       text: isExistUser ? 'Address was signed' : `Address wasn't signed`,
       isSigned: isExistUser,
