@@ -60,7 +60,7 @@ metadata:
 spec:
   ingressClassName: nginx
   rules:
-    - host: api.staging.b14g.xyz
+    - host: api-staging.b14g.xyz
       http:
         paths:
           - pathType: Prefix
