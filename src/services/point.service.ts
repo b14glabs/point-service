@@ -140,6 +140,8 @@ export const insertPoints = async (
     }
   } catch (error) {
     console.error(error)
-    throw ("Insert points failed")
+    if (!error?.toString()?.includes('duplicate key error')) {
+      throw ("Insert points failed")
+    }
   }
 }
