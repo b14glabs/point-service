@@ -7,9 +7,8 @@ import {
   findReferral,
   getHolders,
   getPointLeaderboard,
-  getSnapshotRecords,
+  getPointRecords,
 } from '../services'
-import { Snapshot } from '../models'
 
 export const getTotalPoint = async (
   req: Request,
@@ -24,7 +23,7 @@ export const getTotalPoint = async (
 
     let addressInfo
 
-    const records = await getSnapshotRecords()
+    const records = await getPointRecords()
     const refRecord = await findReferral({ to: holder })
 
     const totalDocument = await countHolder()

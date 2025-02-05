@@ -15,12 +15,12 @@ const schemaDefinition = {
   type: String,
 } as const
 
-const snapshotSchema = new Schema(schemaDefinition, {
+const pointSchema = new Schema(schemaDefinition, {
   timestamps: { createdAt: true, updatedAt: true },
   collection: 'point',
 })
-snapshotSchema.plugin(paginate)
+pointSchema.plugin(paginate)
 
-export type ISnapshot = InferRawDocType<typeof schemaDefinition>
+export type IPoint = InferRawDocType<typeof schemaDefinition>
 
-export const Snapshot = model('Snapshot', snapshotSchema)
+export const Point = model('Point', pointSchema)

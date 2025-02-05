@@ -1,8 +1,8 @@
 import { RootFilterQuery } from 'mongoose'
-import { ISnapshot, Snapshot } from '../models'
+import { IPoint, Point } from '../models'
 
-export const getSnapshotRecords = () => {
-  return Snapshot.aggregate<{ _id: string; totalPoints: number }>([
+export const getPointRecords = () => {
+  return Point.aggregate<{ _id: string; totalPoints: number }>([
     {
       $group: {
         _id: '$holder',
@@ -17,16 +17,16 @@ export const getSnapshotRecords = () => {
   ])
 }
 
-export const findSnapshot = (filter: RootFilterQuery<ISnapshot>) => {
-  return Snapshot.findOne(filter)
+export const findPoint = (filter: RootFilterQuery<IPoint>) => {
+  return Point.findOne(filter)
 }
 
 export const getHolders = () => {
-  return Snapshot.distinct("holder")
+  return Point.distinct("holder")
 }
 
 export const countHolder = () => {
-  return Snapshot.aggregate<{ totalHolders: number }>([
+  return Point.aggregate<{ totalHolders: number }>([
     {
       $group: { _id: '$holder' },
     },
@@ -37,18 +37,18 @@ export const countHolder = () => {
 }
 
 export const countRecordsByHolder = (holder: string) => {
-  return Snapshot.countDocuments({ holder })
+  return Point.countDocuments({ holder })
 }
 
 export const findRecordsWithPagination = (
-  filter: RootFilterQuery<ISnapshot>,
+  filter: RootFilterQuery<IPoint>,
   options: any
 ) => {
-  return (Snapshot as any).paginate(filter, options)
+  return (Point as any).paginate(filter, options)
 }
 
 export const getPointLeaderboard = (page: number, limit: number) => {
-  return Snapshot.aggregate([
+  return Point.aggregate([
     {
       $group: {
         _id: '$holder',

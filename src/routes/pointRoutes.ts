@@ -4,7 +4,7 @@ import {
   getTotalPoint,
   getHistory,
   getLeaderboard,
-} from '../controllers/snapController'
+} from '../controllers/pointController'
 
 const router: Router = Router()
 
