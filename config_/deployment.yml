@@ -32,6 +32,11 @@ spec:
                 secretKeyRef:
                   name: point-service
                   key: MONGO_URL
+            - name: VERIFY_PUBLIC_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: point-service
+                  key: VERIFY_PUBLIC_KEY
       imagePullSecrets:
         - name: cred-docker-hub
 ---
