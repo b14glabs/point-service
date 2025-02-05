@@ -22,7 +22,7 @@ router.use('/point', snapshotRoutes)
 app.use('/restake', router)
 
 mongoose
-  .connect(process.env.MONGO_URL, { dbName: 'btc_restaking' })
+  .connect(process.env.MONGO_URL, { dbName: 'user' })
   .then(() => {
     console.log('[DB]: Connected to MongoDB')
     app.listen(port, async () => {

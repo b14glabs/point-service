@@ -17,7 +17,7 @@ const schemaDefinition = {
 
 const snapshotSchema = new Schema(schemaDefinition, {
   timestamps: { createdAt: true, updatedAt: true },
-  collection: 'snapshot',
+  collection: 'point',
 })
 snapshotSchema.plugin(paginate)
 
