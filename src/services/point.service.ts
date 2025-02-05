@@ -1,5 +1,11 @@
 import { RootFilterQuery } from 'mongoose'
 import { IPoint, Point } from '../models'
+import { findReferrals } from './referral.service'
+import { TYPE } from '../const'
+
+const createPoint = (data: IPoint[]) => {
+  return Point.insertMany(data, { ordered: false })
+}
 
 export const getPointRecords = () => {
   return Point.aggregate<{ _id: string; totalPoints: number }>([
@@ -88,4 +94,52 @@ export const getPointLeaderboard = (page: number, limit: number) => {
       },
     },
   ])
+}
+
+export const insertPoints = async (
+  results: Array<IPoint>) => {
+  try {
+    const listHolders = results.map((el) => el.holder)
+    const refInfo = new Map()
+    const data = await findReferrals({
+      to: {
+        $in: listHolders,
+      },
+    })
+
+    // Create hashmap
+    data.forEach((el) => {
+      refInfo.set(el['to'], el['from'])
+    })
+
+    const referralRewardPoint: {
+      holder: string
+      point: number
+      type: TYPE.REFERRAL_REWARD
+      rewardBy: string
+      rewardType: string
+    }[] = []
+
+    // Reward point for who invited this holder
+    for (const result of results) {
+      const ref = refInfo.get(result.holder)
+      if (ref) {
+        referralRewardPoint.push({
+          holder: ref,
+          point: (result.point * 10) / 100,
+          rewardBy: result.holder,
+          rewardType: result.type,
+          type: TYPE.REFERRAL_REWARD,
+        })
+      }
+    }
+
+    const docs = [...referralRewardPoint, ...results]
+    if (docs.length) {
+      await createPoint(docs)
+    }
+  } catch (error) {
+    console.error(error)
+    throw ("Insert points failed")
+  }
 }
