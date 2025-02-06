@@ -9,6 +9,7 @@ import { User } from '../models/user.model'
 import { DUAL_CORE_ADDRESS, RPC_URL, VAULT_ADDRESS } from '../const'
 import { createUser, findUser } from '../services/user.service'
 import { createReferral, findReferral } from '../services'
+import { Referral } from '../models'
 
 interface CreateRefBody {
   evmAddress: string
@@ -152,6 +153,26 @@ export const getCheckAddress = async (
     return res.status(200).json({
       text: isExistUser ? 'Address was signed' : `Address wasn't signed`,
       isSigned: isExistUser,
+    })
+  } catch (error) {
+    res.status(500).json({ error: error.message || error })
+  }
+}
+
+export const getTotalReferral = async (req: Request, res: Response) => {
+  try {
+    const address = req.params.address
+
+    if (!web3.utils.isAddress(address)) {
+      return res.status(400).json({ error: 'Address address required' })
+    }
+
+    const totalRefer = await Referral.countDocuments({
+      from: address,
+    })
+
+    return res.status(200).json({
+      totalRefer,
     })
   } catch (error) {
     res.status(500).json({ error: error.message || error })
