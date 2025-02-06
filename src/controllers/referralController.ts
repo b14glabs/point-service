@@ -163,6 +163,23 @@ export const getCheckAddress = async (
   }
 }
 
+export const getReferInfo = async (
+  req: Request,
+  res: Response
+): Promise<any> => {
+  try {
+    if (!web3.utils.isAddress(req.query.address as string)) {
+      return res.status(400).json({ error: 'address is required' })
+    }
+    const address = String(req.query.address).toLowerCase()
+    const referBy = await Referral.findOne({to: address})
+    return res.status(200).json({referBy: referBy ? referBy.from : null})
+  } catch (error) {
+    res.status(500).json({ error: error.message || error })
+  }
+}
+
+
 export const getTotalReferral = async (req: Request, res: Response) => {
   try {
     const address = req.params.address
