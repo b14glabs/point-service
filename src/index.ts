@@ -5,7 +5,6 @@ import express, { Express, Router } from 'express'
 import mongoose from 'mongoose'
 import morgan from 'morgan'
 import Web3 from 'web3'
-import referralRoutes from './routes/referralRoutes'
 import pointRoutes from './routes/pointRoutes'
 
 dotenv.config()
@@ -19,7 +18,6 @@ app.use(cors())
 app.use(morgan(':method :url :status - :response-time ms'))
 
 const router: Router = Router()
-router.use('/referral', referralRoutes)
 router.use('/point', pointRoutes)
 app.use('/restake', router)
 
