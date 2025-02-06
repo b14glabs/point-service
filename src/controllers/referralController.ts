@@ -58,7 +58,7 @@ export const createRef = async (req: Request, res: Response) => {
         .call()) as unknown as bigint
 
       if (
-        BigInt(data.totalBtcStaked) < BigInt(1e7) &&
+        BigInt(data.totalBtcStaked) < BigInt(1e6) &&
         BigInt(data.validCoreStaked) +
         coreStakedToVault -
         BigInt(data.validCoreWithdrawn) <
@@ -66,7 +66,7 @@ export const createRef = async (req: Request, res: Response) => {
       ) {
         return res.status(400).json({
           message:
-            'You must stake min 0.1 BTC or current stake more than 1000 CORE',
+            'You must stake min 0.01 BTC or current stake more than 1000 CORE',
         })
       }
 
