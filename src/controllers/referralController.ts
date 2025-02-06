@@ -60,7 +60,8 @@ export const createRef = async (req: Request, res: Response) => {
         BigInt(data.totalBtcStaked) < BigInt(1e7) &&
         BigInt(data.validCoreStaked) +
           coreStakedToVault -
-          BigInt(data.validCoreWithdrawn)
+          BigInt(data.validCoreWithdrawn) <
+          BigInt(1000 * 1e18)
       ) {
         return res.status(400).json({
           message:
