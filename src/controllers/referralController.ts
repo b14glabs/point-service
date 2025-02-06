@@ -121,14 +121,14 @@ export const verifyRef = async (req: Request, res: Response) => {
       to: evmAddress.toLowerCase(),
     })
 
-    if (existRef) {
-      return res.status(500).json({ error: 'Already referred' })
-    }
+    // if (existRef) {
+    //   return res.status(500).json({ error: 'Already referred' })
+    // }
 
-    await createReferral({
-      from: user.evmAddress,
-      to: evmAddress.toLowerCase(),
-    })
+    // await createReferral({
+    //   from: user.evmAddress,
+    //   to: evmAddress.toLowerCase(),
+    // })
 
     return res.status(200).json({ message: 'Verify referral code complete!' })
   } catch (error) {
