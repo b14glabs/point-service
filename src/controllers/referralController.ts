@@ -37,21 +37,22 @@ export const createRef = async (req: Request, res: Response) => {
     if (user?.code) {
       res.status(400).json({ error: 'Address was used' })
     } else {
-      const response = await axios.get(
-        `${process.env.MARKETPLACE_ENDPOINT_API}/stake-info/${evmAddress}`
-      )
+      const web3 = new Web3(RPC_URL)
+      const dualCore = new web3.eth.Contract(dualCoreAbi, DUAL_CORE_ADDRESS)
+      const coreVault = new web3.eth.Contract(coreVaultAbi, VAULT_ADDRESS)
+      const [response, userDualCoreBalance] = await Promise.all([
+        axios.get(
+          `${process.env.MARKETPLACE_ENDPOINT_API}/stake-info/${evmAddress}`
+        ), 
+        dualCore.methods
+          .balanceOf(evmAddress)
+          .call()
+      ])
       const data: {
         totalBtcStaked: string
         validCoreStaked: string
         validCoreWithdrawn: string
       } = response.data
-
-      const web3 = new Web3(RPC_URL)
-      const dualCore = new web3.eth.Contract(dualCoreAbi, DUAL_CORE_ADDRESS)
-      const coreVault = new web3.eth.Contract(coreVaultAbi, VAULT_ADDRESS)
-      const userDualCoreBalance = await dualCore.methods
-        .balanceOf(evmAddress)
-        .call()
       const coreStakedToVault = (await coreVault.methods
         .exchangeCore(userDualCoreBalance)
         .call()) as unknown as bigint
@@ -59,9 +60,9 @@ export const createRef = async (req: Request, res: Response) => {
       if (
         BigInt(data.totalBtcStaked) < BigInt(1e7) &&
         BigInt(data.validCoreStaked) +
-          coreStakedToVault -
-          BigInt(data.validCoreWithdrawn) <
-          BigInt(1000 * 1e18)
+        coreStakedToVault -
+        BigInt(data.validCoreWithdrawn) <
+        BigInt(1000 * 1e18)
       ) {
         return res.status(400).json({
           message:
@@ -148,12 +149,12 @@ export const getCheckAddress = async (
 ): Promise<any> => {
   try {
     const address = String(req.query.address).toLowerCase()
-
-    const isExistUser = await findUser({ evmAddress: address })
-    const totalRefer = await Referral.countDocuments({
-      from: address,
-    })
-
+    const [isExistUser, totalRefer] = await Promise.all([
+      findUser({ evmAddress: address }),
+      Referral.countDocuments({
+        from: address,
+      })
+    ])
     return res.status(200).json({
       text: isExistUser ? 'Address was signed' : `Address wasn't signed`,
       isSigned: isExistUser,
@@ -180,23 +181,3 @@ export const getReferInfo = async (
   }
 }
 
-
-export const getTotalReferral = async (req: Request, res: Response) => {
-  try {
-    const address = req.params.address
-
-    if (!web3.utils.isAddress(address)) {
-      return res.status(400).json({ error: 'Address address required' })
-    }
-
-    const totalRefer = await Referral.countDocuments({
-      from: address,
-    })
-
-    return res.status(200).json({
-      totalRefer,
-    })
-  } catch (error) {
-    res.status(500).json({ error: error.message || error })
-  }
-}
