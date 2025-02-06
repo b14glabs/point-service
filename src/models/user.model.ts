@@ -10,11 +10,7 @@ const schemaDefinition = {
     type: String,
     unique: true,
     required: false,
-  },
-  referFrom: {
-    type: String,
-    required: false,
-  },
+  }
 } as const
 
 const userSchema = new Schema(schemaDefinition, {
