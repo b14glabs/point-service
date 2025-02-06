@@ -17,10 +17,11 @@ const schemaDefinition = {
   },
 } as const
 
-const userlSchema = new Schema(schemaDefinition, {
+const userSchema = new Schema(schemaDefinition, {
   timestamps: { createdAt: true, updatedAt: true },
+  collection: "user"
 })
 
-export const User = model('User', userlSchema)
+export const User = model('User', userSchema)
 
 export type IUser = InferRawDocType<typeof schemaDefinition>
