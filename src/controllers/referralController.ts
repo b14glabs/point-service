@@ -129,12 +129,12 @@ export const verifyRef = async (req: Request, res: Response) => {
       to: evmAddress.toLowerCase(),
     })
 
-    const existUser = await findUser({ evmAddress: evmAddress.toLowerCase() })
-    if (!existUser) {
-      await createUser({
-        evmAddress: evmAddress.toLowerCase(),
-      })
-    }
+    // const existUser = await findUser({ evmAddress: evmAddress.toLowerCase() })
+    // if (!existUser) {
+    //   await createUser({
+    //     evmAddress: evmAddress.toLowerCase(),
+    //   })
+    // }
     return res.status(200).json({ message: 'Verify referral code complete!' })
   } catch (error) {
     console.error(error)
