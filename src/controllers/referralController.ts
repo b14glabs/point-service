@@ -20,12 +20,18 @@ interface VerifyRefBody {
   code: string
 }
 
+const web3 = new Web3(RPC_URL)
+
 export const createRef = async (req: Request, res: Response) => {
   try {
     let body: CreateRefBody = req.body
     let { evmAddress } = body
 
-    const user = await findUser({ evmAddress: evmAddress.toLocaleLowerCase() })
+    if (!web3.utils.isAddress(evmAddress)) {
+      return res.status(400).json({ error: 'evmAddress address required' })
+    }
+
+    const user = await findUser({ evmAddress: evmAddress.toLowerCase() })
 
     if (user?.code) {
       res.status(500).json({ error: 'Address was used' })
@@ -55,13 +61,17 @@ export const createRef = async (req: Request, res: Response) => {
           coreStakedToVault -
           BigInt(data.validCoreWithdrawn)
       ) {
+        return res.status(400).json({
+          message:
+            'You must stake min 0.1 BTC or current stake more than 1000 CORE',
+        })
       }
 
       const doc = await createUser({
-        evmAddress: evmAddress.toLocaleLowerCase(),
+        evmAddress: evmAddress.toLowerCase(),
         code: crypto
           .createHash('md5')
-          .update(evmAddress.toLocaleLowerCase())
+          .update(evmAddress.toLowerCase())
           .digest()
           .toString('hex'),
       })
