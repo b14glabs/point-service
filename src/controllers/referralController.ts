@@ -149,10 +149,14 @@ export const getCheckAddress = async (
     const address = String(req.query.address).toLowerCase()
 
     const isExistUser = await findUser({ evmAddress: address })
-    
+    const totalRefer = await Referral.countDocuments({
+      from: address,
+    })
+
     return res.status(200).json({
       text: isExistUser ? 'Address was signed' : `Address wasn't signed`,
       isSigned: isExistUser,
+      totalRefer
     })
   } catch (error) {
     res.status(500).json({ error: error.message || error })
