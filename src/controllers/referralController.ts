@@ -35,7 +35,7 @@ export const createRef = async (req: Request, res: Response) => {
     const user = await findUser({ evmAddress: evmAddress.toLowerCase() })
 
     if (user?.code) {
-      res.status(500).json({ error: 'Address was used' })
+      res.status(400).json({ error: 'Address was used' })
     } else {
       const response = await axios.get(
         `${process.env.MARKETPLACE_ENDPOINT_API}/stake-info/${evmAddress}`
