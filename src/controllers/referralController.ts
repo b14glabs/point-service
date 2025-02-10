@@ -10,6 +10,7 @@ import { DUAL_CORE_ADDRESS, RPC_URL, VAULT_ADDRESS } from '../const'
 import { createUser, findUser } from '../services/user.service'
 import { createReferral, findReferral } from '../services'
 import { Referral } from '../models'
+import { error } from 'console'
 
 interface CreateRefBody {
   evmAddress: string
@@ -43,10 +44,8 @@ export const createRef = async (req: Request, res: Response) => {
       const [response, userDualCoreBalance] = await Promise.all([
         axios.get(
           `${process.env.MARKETPLACE_ENDPOINT_API}/stake-info/${evmAddress}`
-        ), 
-        dualCore.methods
-          .balanceOf(evmAddress)
-          .call()
+        ),
+        dualCore.methods.balanceOf(evmAddress).call(),
       ])
       const data: {
         totalBtcStaked: string
@@ -60,9 +59,9 @@ export const createRef = async (req: Request, res: Response) => {
       if (
         BigInt(data.totalBtcStaked) < BigInt(1e6) &&
         BigInt(data.validCoreStaked) +
-        coreStakedToVault -
-        BigInt(data.validCoreWithdrawn) <
-        BigInt(1000 * 1e18)
+          coreStakedToVault -
+          BigInt(data.validCoreWithdrawn) <
+          BigInt(1000 * 1e18)
       ) {
         return res.status(400).json({
           message:
@@ -111,6 +110,10 @@ export const verifyRef = async (req: Request, res: Response) => {
           error: 'User staked to vault',
         })
       }
+    } else {
+      return res.status(500).json({
+        error: 'Cannot connect to Vault Service',
+      })
     }
 
     if (mkpStaked.status === 'fulfilled') {
@@ -119,6 +122,10 @@ export const verifyRef = async (req: Request, res: Response) => {
           error: 'User staked to marketplace',
         })
       }
+    } else {
+      return res.status(500).json({
+        error: 'Cannot connect to Marketplace Service',
+      })
     }
 
     const text = `I'm joining B14G with address ${evmAddress} by referral code ${code}`
