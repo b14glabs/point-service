@@ -97,6 +97,30 @@ export const verifyRef = async (req: Request, res: Response) => {
       })
     }
 
+    const [mkpStaked, vaultStaked] = await Promise.allSettled([
+      axios.get(
+        `${process.env.MARKETPLACE_ENDPOINT_API}/check-staked/${evmAddress}`
+      ),
+      axios.get(`${process.env.VAULT_ENDPOINT_API}/check-staked/${evmAddress}`),
+    ])
+
+    console.log('vaultStaked: ', vaultStaked)
+    if (vaultStaked.status === 'fulfilled') {
+      if (vaultStaked.value.data.isStaked) {
+        return res.status(400).json({
+          error: 'User staked to vault',
+        })
+      }
+    }
+
+    if (mkpStaked.status === 'fulfilled') {
+      if (mkpStaked.value.data.isStaked) {
+        return res.status(400).json({
+          error: 'User staked to marketplace',
+        })
+      }
+    }
+
     const text = `I'm joining B14G with address ${evmAddress} by referral code ${code}`
     const recoveredAddress = sigUtil.recoverPersonalSignature({
       data: Buffer.from(text),
