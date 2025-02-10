@@ -1,6 +1,10 @@
 import { RootFilterQuery } from 'mongoose'
 import { IReferral, Referral } from '../models'
 
+export const createReferral = (doc: IReferral) => {
+  return Referral.create(doc)
+}
+
 export const findReferral = (filter: RootFilterQuery<IReferral>) => {
   return Referral.findOne(filter)
 }
