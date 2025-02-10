@@ -13,7 +13,7 @@ const cache = apicache.middleware
 
 router.post('/create-referral', createRef)
 router.post('/verify-referral', verifyRef)
-router.get('/check', getCheckAddress)
-router.get('/refer-by', getReferInfo)
+router.get('/check', cache("2 seconds"), getCheckAddress)
+router.get('/refer-by', cache("2 seconds"), getReferInfo)
 
 export default router

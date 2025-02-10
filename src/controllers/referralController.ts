@@ -5,12 +5,11 @@ import * as crypto from 'crypto'
 import * as sigUtil from '@metamask/eth-sig-util'
 import dualCoreAbi from '../abi/dual-core.json'
 import coreVaultAbi from '../abi/coreVault.json'
-import { User } from '../models/user.model'
 import { DUAL_CORE_ADDRESS, RPC_URL, VAULT_ADDRESS } from '../const'
 import { createUser, findUser } from '../services/user.service'
 import { createReferral, findReferral } from '../services'
 import { Referral } from '../models'
-import { error } from 'console'
+import { getCheckStaked } from '../util'
 
 interface CreateRefBody {
   evmAddress: string
@@ -96,14 +95,8 @@ export const verifyRef = async (req: Request, res: Response) => {
       })
     }
 
-    const [mkpStaked, vaultStaked] = await Promise.allSettled([
-      axios.get(
-        `${process.env.MARKETPLACE_ENDPOINT_API}/check-staked/${evmAddress}`
-      ),
-      axios.get(`${process.env.VAULT_ENDPOINT_API}/check-staked/${evmAddress}`),
-    ])
+    const [mkpStaked, vaultStaked] = await getCheckStaked(evmAddress)
 
-    console.log('vaultStaked: ', vaultStaked)
     if (vaultStaked.status === 'fulfilled') {
       if (vaultStaked.value.data.isStaked) {
         return res.status(400).json({
@@ -200,7 +193,30 @@ export const getReferInfo = async (
     }
     const address = String(req.query.address).toLowerCase()
     const referBy = await Referral.findOne({to: address})
-    return res.status(200).json({referBy: referBy ? referBy.from : null})
+
+    const [mkpStaked, vaultStaked] = await getCheckStaked(address)
+    let isNewUser = true
+    if (vaultStaked.status === 'fulfilled') {
+      if (vaultStaked.value.data.isStaked) {
+        isNewUser = false
+      }
+    } else {
+      return res.status(500).json({
+        error: 'Cannot connect to Vault service',
+      })
+    }
+
+    if (mkpStaked.status === 'fulfilled') {
+      if (mkpStaked.value.data.isStaked) {
+        isNewUser = false
+      }
+    } else {
+      return res.status(500).json({
+        error: 'Cannot connect to Marketplace service',
+      })
+    }
+
+    return res.status(200).json({referBy: referBy ? referBy.from : null, isNewUser})
   } catch (error) {
     res.status(500).json({ error: error.message || error })
   }
