@@ -47,6 +47,11 @@ spec:
                 secretKeyRef:
                   name: point-service
                   key: VERIFY_PUBLIC_KEY
+            - name: VAULT_ENDPOINT_API
+              valueFrom:
+                secretKeyRef:
+                  name: point-service
+                  key: VAULT_ENDPOINT_API
       imagePullSecrets:
         - name: cred-docker-hub
 ---
