@@ -5,9 +5,9 @@ import {
   findMarketplaceStakers,
   findRecordsWithPagination,
   findReferral,
+  findTotalPoint,
   getHolders,
   getPointLeaderboard,
-  getPointRecords,
 } from '../services'
 
 export const getTotalPoint = async (
@@ -22,32 +22,18 @@ export const getTotalPoint = async (
     const holder = Web3.utils.toChecksumAddress(req.params.holder)
 
     let addressInfo
-
-    const records = await getPointRecords()
+    const record = await findTotalPoint(holder.toLowerCase())
     const refRecord = await findReferral({ to: holder })
-
-    const totalDocument = await countHolder()
-
-    const addressData = records
-      .map((record, idx) => {
-        if (Web3.utils.toChecksumAddress(record['_id']) === holder) {
-          return {
-            totalPoint: record['totalPoints'],
-            rank: idx + 1,
-            holder: record['_id'],
-          }
-        }
-      })
-      .filter((el) => el != undefined)
-
-    addressInfo = addressData.length
-      ? addressData[0]
-      : {
-          holder,
-          rank: totalDocument.length ? totalDocument[0]['totalHolders'] + 1 : 0,
-          totalPoint: 0,
-        }
-
+    if (record.length) {
+      addressInfo = record[0]
+    } else {
+      const totalDocument = await countHolder()
+      addressInfo = {
+        holder,
+        rank: totalDocument.length ? totalDocument[0]['totalHolders'] + 1 : 0,
+        totalPoint: 0,
+      }
+    }
     addressInfo.refferFrom = refRecord ? refRecord['from'] : undefined
     res.status(200).json(addressInfo)
   } catch (error) {
@@ -67,24 +53,24 @@ export const getHistory = async (
       res.status(400).send({ error: 'Invalid page number' })
       return
     }
-    const type = req.query.type as string
-    const isBtcClaim = req.query.isBtcClaim === 'true'
-    const query = type
-      ? {
-          holder: { $regex: `^${req.params.holder}$`, $options: 'i' },
-          type: { $eq: type },
-          ...(type === 'marketplace-claim-reward' && {
-            isBtcClaim: { $eq: isBtcClaim },
-          }),
-        }
-      : {
-          holder: { $regex: `^${req.params.holder}$`, $options: 'i' },
-        }
-
     if (!Web3.utils.isAddress(req.params.holder)) {
       res.status(400).json({ error: 'holder is invalid address' })
       return
     }
+
+    const type = req.query.type as string
+    const isBtcClaim = req.query.isBtcClaim === 'true'
+    const query = type
+      ? {
+        holder: req.params.holder.toLowerCase(),
+        type: { $eq: type },
+        ...(type === 'marketplace-claim-reward' && {
+          isBtcClaim: { $eq: isBtcClaim },
+        }),
+      }
+      : {
+        holder: req.params.holder.toLowerCase(),
+      }
 
     const result = await findRecordsWithPagination(
       {

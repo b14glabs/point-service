@@ -7,20 +7,36 @@ const createPoint = (data: IPoint[]) => {
   return Point.insertMany(data, { ordered: false })
 }
 
-export const getPointRecords = () => {
-  return Point.aggregate<{ _id: string; totalPoints: number }>([
+export const findTotalPoint = (user: string) => {
+  return Point.aggregate([
     {
-      $group: {
-        _id: '$holder',
-        totalPoints: { $sum: '$point' },
-      },
+      $group:
+      {
+        _id: "$holder",
+        totalPoint: {
+          $sum: "$point"
+        },
+        holder: { $first: "$holder" }
+      }
     },
     {
-      $sort: {
-        totalPoints: -1,
-      },
+      $setWindowFields: {
+        sortBy: {
+          totalPoint: -1
+        },
+        output: {
+          rank: {
+            $rank: {}
+          },
+        }
+      }
     },
-  ])
+    {
+      $match: {
+        _id: user
+      }
+    }
+  ]) as unknown as { rank: number, totalPoint: number, holder: string}[]
 }
 
 export const findPoint = (filter: RootFilterQuery<IPoint>) => {
