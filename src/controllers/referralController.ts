@@ -7,8 +7,7 @@ import dualCoreAbi from '../abi/dual-core.json'
 import coreVaultAbi from '../abi/coreVault.json'
 import { DUAL_CORE_ADDRESS, RPC_URL, VAULT_ADDRESS } from '../const'
 import { createUser, findUser } from '../services/user.service'
-import { createReferral, findReferral } from '../services'
-import { Referral } from '../models'
+import { countReferrals, createReferral, findReferral } from '../services'
 import { getCheckStaked } from '../util'
 
 interface CreateRefBody {
@@ -169,7 +168,7 @@ export const getCheckAddress = async (
     const address = String(req.query.address).toLowerCase()
     const [isExistUser, totalRefer] = await Promise.all([
       findUser({ evmAddress: address }),
-      Referral.countDocuments({
+      countReferrals({
         from: address,
       })
     ])
@@ -192,7 +191,7 @@ export const getReferInfo = async (
       return res.status(400).json({ error: 'address is required' })
     }
     const address = String(req.query.address).toLowerCase()
-    const referBy = await Referral.findOne({to: address})
+    const referBy = await findReferral({to: address})
 
     const [mkpStaked, vaultStaked] = await getCheckStaked(address)
     let isNewUser = true
