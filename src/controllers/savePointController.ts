@@ -2,6 +2,7 @@ import { Request, Response } from 'express'
 import * as crypto from 'crypto'
 import * as secp256k1 from 'secp256k1'
 import { insertPoints } from '../services'
+import { filterPoint } from '../helper'
 export const savePoint = async (
   req: Request,
   res: Response
@@ -20,7 +21,7 @@ export const savePoint = async (
       res.status(403).json({ error: 'Invalid' })
       return
     }
-    await insertPoints(data)
+    await insertPoints(filterPoint(data))
     res.status(200).json({ status: 'ok' })
   } catch (error) {
     console.error(error)
