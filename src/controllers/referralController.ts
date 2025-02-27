@@ -120,6 +120,15 @@ export const verifyRef = async (req: Request, res: Response) => {
       })
     }
 
+    const dualCore = new web3.eth.Contract(dualCoreAbi, DUAL_CORE_ADDRESS)
+    const dualCoreBalance = await dualCore.methods.balanceOf(evmAddress).call() as bigint
+
+    if (dualCoreBalance > BigInt(0)) {
+      return res.status(400).json({
+        error: 'User holds dualCORE',
+      })
+    }
+
     const text = `I'm joining B14G with address ${evmAddress} by referral code ${code}`
     const recoveredAddress = sigUtil.recoverPersonalSignature({
       data: Buffer.from(text),
@@ -213,6 +222,13 @@ export const getReferInfo = async (
       return res.status(500).json({
         error: 'Cannot connect to Marketplace service',
       })
+    }
+
+    const dualCore = new web3.eth.Contract(dualCoreAbi, DUAL_CORE_ADDRESS)
+    const dualCoreBalance = await dualCore.methods.balanceOf(address).call() as bigint
+
+    if (dualCoreBalance > BigInt(0)) {
+      isNewUser = false
     }
 
     return res.status(200).json({referBy: referBy ? referBy.from : null, isNewUser})
