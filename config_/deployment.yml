@@ -32,11 +32,26 @@ spec:
                 secretKeyRef:
                   name: point-service
                   key: MONGO_URL
+            - name: RPC_URL
+              valueFrom:
+                secretKeyRef:
+                  name: point-service
+                  key: RPC_URL
+            - name: MARKETPLACE_ENDPOINT_API
+              valueFrom:
+                secretKeyRef:
+                  name: point-service
+                  key: MARKETPLACE_ENDPOINT_API
             - name: VERIFY_PUBLIC_KEY
               valueFrom:
                 secretKeyRef:
                   name: point-service
                   key: VERIFY_PUBLIC_KEY
+            - name: VAULT_ENDPOINT_API
+              valueFrom:
+                secretKeyRef:
+                  name: point-service
+                  key: VAULT_ENDPOINT_API
       imagePullSecrets:
         - name: cred-docker-hub
 ---

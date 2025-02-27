@@ -115,8 +115,9 @@ export const getPointLeaderboard = (page: number, limit: number) => {
 export const insertPoints = async (
   results: Array<IPoint>) => {
   try {
-    const listHolders = results.map((el) => el.holder)
+    const listHolders = results.map((el) => el.holder.toLowerCase())
     const refInfo = new Map()
+    // Referral document address field is lowercase
     const data = await findReferrals({
       to: {
         $in: listHolders,
