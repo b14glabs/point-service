@@ -36,36 +36,36 @@ export const createRef = async (req: Request, res: Response) => {
     if (user?.code) {
       res.status(400).json({ error: 'Address was used' })
     } else {
-      const web3 = new Web3(RPC_URL)
-      const dualCore = new web3.eth.Contract(dualCoreAbi, DUAL_CORE_ADDRESS)
-      const coreVault = new web3.eth.Contract(coreVaultAbi, VAULT_ADDRESS)
-      const [response, userDualCoreBalance] = await Promise.all([
-        axios.get(
-          `${process.env.MARKETPLACE_ENDPOINT_API}/stake-info/${evmAddress}`
-        ),
-        dualCore.methods.balanceOf(evmAddress).call(),
-      ])
-      const data: {
-        totalBtcStaked: string
-        validCoreStaked: string
-        validCoreWithdrawn: string
-      } = response.data
-      const coreStakedToVault = (await coreVault.methods
-        .exchangeCore(userDualCoreBalance)
-        .call()) as unknown as bigint
+      // const web3 = new Web3(RPC_URL)
+      // const dualCore = new web3.eth.Contract(dualCoreAbi, DUAL_CORE_ADDRESS)
+      // const coreVault = new web3.eth.Contract(coreVaultAbi, VAULT_ADDRESS)
+      // const [response, userDualCoreBalance] = await Promise.all([
+      //   axios.get(
+      //     `${process.env.MARKETPLACE_ENDPOINT_API}/stake-info/${evmAddress}`
+      //   ),
+      //   dualCore.methods.balanceOf(evmAddress).call(),
+      // ])
+      // const data: {
+      //   totalBtcStaked: string
+      //   validCoreStaked: string
+      //   validCoreWithdrawn: string
+      // } = response.data
+      // const coreStakedToVault = (await coreVault.methods
+      //   .exchangeCore(userDualCoreBalance)
+      //   .call()) as unknown as bigint
 
-      if (
-        BigInt(data.totalBtcStaked) < BigInt(1e6) &&
-        BigInt(data.validCoreStaked) +
-          coreStakedToVault -
-          BigInt(data.validCoreWithdrawn) <
-          BigInt(1000 * 1e18)
-      ) {
-        return res.status(400).json({
-          message:
-            'You must stake min 0.01 BTC or current stake more than 1000 CORE',
-        })
-      }
+      // if (
+      //   BigInt(data.totalBtcStaked) < BigInt(1e6) &&
+      //   BigInt(data.validCoreStaked) +
+      //     coreStakedToVault -
+      //     BigInt(data.validCoreWithdrawn) <
+      //     BigInt(1000 * 1e18)
+      // ) {
+      //   return res.status(400).json({
+      //     message:
+      //       'You must stake min 0.01 BTC or current stake more than 1000 CORE',
+      //   })
+      // }
 
       const doc = await createUser({
         evmAddress: evmAddress.toLowerCase(),
