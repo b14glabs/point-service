@@ -63,7 +63,7 @@ export const createRef = async (req: Request, res: Response) => {
       ) {
         return res.status(400).json({
           message:
-            'You must stake min 0.01 BTC or current stake more than 1000 CORE',
+            'To create referral link, you need to stake at least 0.01 BTC or have a minimum balance worth of 1,000 CORE in b14g’s dApp—either through CORE staking or the dualCORE vault.',
         })
       }
 
