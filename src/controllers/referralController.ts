@@ -34,7 +34,7 @@ export const createRef = async (req: Request, res: Response) => {
     const user = await findUser({ evmAddress: evmAddress.toLowerCase() })
 
     if (user?.code) {
-      res.status(400).json({ error: 'Address was used' })
+      res.status(400).json({ message: 'This wallet has successfully created a referral link. Please reload the page to view it.' })
     } else {
       const web3 = new Web3(RPC_URL)
       const dualCore = new web3.eth.Contract(dualCoreAbi, DUAL_CORE_ADDRESS)
