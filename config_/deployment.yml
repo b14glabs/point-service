@@ -85,3 +85,13 @@ spec:
                 name: point-service
                 port:
                   number: 3001
+    - host: api1.b14g.xyz
+      http:
+        paths:
+          - pathType: Prefix
+            path: '/restake/point'
+            backend:
+              service:
+                name: point-service
+                port:
+                  number: 3001
