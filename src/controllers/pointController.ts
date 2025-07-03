@@ -6,6 +6,7 @@ import {
   findRecordsWithPagination,
   findReferral,
   findTotalPoint,
+  getEarnTodayRequest,
   getHolders,
   getPointLeaderboard,
 } from '../services'
@@ -152,6 +153,21 @@ export const getLeaderboard = async (
       data: result,
       lastUpdate: new Date(),
     })
+  } catch (error) {
+    console.error(error)
+    res.status(500).json({ error: error.message || error })
+  }
+}
+
+
+export const getEarnToday = async (
+  req: Request,
+  res: Response
+): Promise<void> => {
+  try {
+    const earn = await getEarnTodayRequest(req.params.address)
+    const point = earn.length ? earn[0].totalPoint: 0
+    res.json({point: point})
   } catch (error) {
     console.error(error)
     res.status(500).json({ error: error.message || error })
