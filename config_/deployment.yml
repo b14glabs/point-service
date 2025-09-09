@@ -20,6 +20,8 @@ spec:
       labels:
         app: point-service
     spec:
+      nodeSelector:
+        persistent_data3: "all"
       containers:
         - name: point-service
           image: easyprompt2023/point-service:latest
