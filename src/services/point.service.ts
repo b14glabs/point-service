@@ -164,32 +164,25 @@ export const insertPoints = async (
 }
 
 export const getEarnTodayRequest = (holder: string) => {
-  const date = new Date();
-  date.setUTCHours(0, 0, 0, 0);
-  
+  const date = new Date()
+  date.setUTCHours(0,0,0,0)
   return Point.aggregate([
-    {
-      $match: {
-        holder: holder.toLowerCase(),
-        createdAt: {
-          $gte: date
-        },
-        type: { $ne: "referral-reward" }
-      }
-    },
-    {
-      $group: {
-        _id: null,
-        totalPoint: {
-          $sum: {
-            $cond: {
-              if: { $eq: ["$type", "dual-core-snapshot"] },
-              then: { $divide: ["$point", 2] },
-              else: "$point"
-            }
-          }
-        }
+  {
+    $match: {
+      holder: holder.toLowerCase(),
+      createdAt: {
+        $gte: date
+      },
+      type: { $ne: "referral-reward" }
+    }
+  },
+  {
+    $group: {
+      _id: null,
+      totalPoint: {
+        $sum: "$point"
       }
     }
-  ]);
-};
+  }
+])
+}
