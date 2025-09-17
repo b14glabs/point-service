@@ -27,6 +27,7 @@ const schemaDefinition = {
   isBtcClaim: Boolean,
   amount: String,
   time: Date,
+  isAsxNftHolder: Boolean
 }
 
 
