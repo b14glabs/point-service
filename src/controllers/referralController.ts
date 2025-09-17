@@ -175,6 +175,7 @@ export const getCheckAddress = async (
 ): Promise<any> => {
   try {
     const address = String(req.query.address).toLowerCase()
+    // @ts-ignore
     const [isExistUser, totalRefer] = await Promise.all([
       findUser({ evmAddress: address }),
       countReferrals({
