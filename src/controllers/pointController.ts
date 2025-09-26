@@ -76,6 +76,7 @@ export const getHistory = async (
     const result = await findRecordsWithPagination(
       {
         ...query,
+        point: {$gte: 0.01}
       },
       {
         sortBy: 'createdAt:desc',
