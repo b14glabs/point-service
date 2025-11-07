@@ -16,11 +16,19 @@ export const getTotalPoint = async (
   res: Response
 ): Promise<void> => {
   try {
-    if (!Web3.utils.isAddress(req.params.holder)) {
+    if (!req.params.holder) {
+      res.status(400).json({ error: 'holder query is missing' })
+      return
+    }
+    if (
+      !req.params.holder.startsWith('bbn') &&
+      !Web3.utils.isAddress(req.params.holder)
+    ) {
       res.status(400).json({ error: 'holder is invalid address' })
       return
     }
-    const holder = Web3.utils.toChecksumAddress(req.params.holder)
+    
+    const holder = req.params.holder
 
     let addressInfo
     const record = await findTotalPoint(holder.toLowerCase())
@@ -54,7 +62,14 @@ export const getHistory = async (
       res.status(400).send({ error: 'Invalid page number' })
       return
     }
-    if (!Web3.utils.isAddress(req.params.holder)) {
+    if (!req.params.holder) {
+      res.status(400).json({ error: 'holder query is missing' })
+      return
+    }
+    if (
+      !req.params.holder.startsWith('bbn') &&
+      !Web3.utils.isAddress(req.params.holder)
+    ) {
       res.status(400).json({ error: 'holder is invalid address' })
       return
     }
@@ -63,15 +78,15 @@ export const getHistory = async (
     const isBtcClaim = req.query.isBtcClaim === 'true'
     const query = type
       ? {
-        holder: req.params.holder.toLowerCase(),
-        type: { $eq: type },
-        ...(type === 'marketplace-claim-reward' && {
-          isBtcClaim: { $eq: isBtcClaim },
-        }),
-      }
+          holder: req.params.holder.toLowerCase(),
+          type: { $eq: type },
+          ...(type === 'marketplace-claim-reward' && {
+            isBtcClaim: { $eq: isBtcClaim },
+          }),
+        }
       : {
-        holder: req.params.holder.toLowerCase(),
-      }
+          holder: req.params.holder.toLowerCase(),
+        }
 
     const result = await findRecordsWithPagination(
       {
