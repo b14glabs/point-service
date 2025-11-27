@@ -6,6 +6,7 @@ import {
   findRecordsWithPagination,
   findReferral,
   findTotalPoint,
+  findTotalPointWithEvmAndBabylon,
   getEarnTodayRequest,
   getHolders,
   getPointLeaderboard,
@@ -27,7 +28,7 @@ export const getTotalPoint = async (
       res.status(400).json({ error: 'holder is invalid address' })
       return
     }
-    
+
     const holder = req.params.holder
 
     let addressInfo
@@ -44,6 +45,74 @@ export const getTotalPoint = async (
       }
     }
     addressInfo.refferFrom = refRecord ? refRecord['from'] : undefined
+    res.status(200).json(addressInfo)
+  } catch (error) {
+    console.error(error)
+    res.status(500).json({ error: error.message || error })
+  }
+}
+
+export const getTotalPointV2 = async (
+  req: Request,
+  res: Response
+): Promise<void> => {
+  try {
+    const body: {
+      evmAddress?: string
+      babylonAddress?: string
+    } = req.body
+    let { evmAddress, babylonAddress } = body
+
+    if (!evmAddress && !babylonAddress) {
+      res.status(400).json({
+        error:
+          'Require at least 1 field evmAddress or babylonAddress in request body',
+      })
+      return
+    }
+    if (babylonAddress && !babylonAddress.startsWith('bbn')) {
+      res.status(400).json({ error: 'babylonAddress is invalid address' })
+      return
+    }
+
+    if (evmAddress && !Web3.utils.isAddress(evmAddress)) {
+      res.status(400).json({ error: 'evmAddress is invalid address' })
+      return
+    }
+
+    let addressInfo: {
+      holder?: string
+      evmPoint?: number
+      babylonPoint?: number
+      totalPoint?: number
+      rank: number
+      refferFrom?: string | undefined
+    } = {
+      evmPoint: 0,
+      babylonPoint: 0,
+      totalPoint: 0,
+      rank: 0,
+      refferFrom: undefined,
+    }
+    if (evmAddress) {
+      evmAddress = evmAddress.toLowerCase()
+      const refRecord = await findReferral({ to: evmAddress })
+      addressInfo.refferFrom = refRecord ? refRecord['from'] : undefined
+    }
+    const record = await findTotalPointWithEvmAndBabylon({
+      evmAddress,
+      babylonAddress,
+    })
+    if (record.length) {
+      addressInfo = record[0]
+    } else {
+      const totalDocument = await countHolder()
+      addressInfo = {
+        holder: evmAddress,
+        rank: totalDocument.length ? totalDocument[0]['totalHolders'] + 1 : 0,
+        totalPoint: 0,
+      }
+    }
     res.status(200).json(addressInfo)
   } catch (error) {
     console.error(error)
@@ -80,7 +149,8 @@ export const getHistory = async (
       ? {
           holder: req.params.holder.toLowerCase(),
           type: { $eq: type },
-          ...(type === 'marketplace-claim-reward' && {
+          ...((type === 'marketplace-claim-reward' ||
+            type === 'babylon-marketplace') && {
             isBtcClaim: { $eq: isBtcClaim },
           }),
         }

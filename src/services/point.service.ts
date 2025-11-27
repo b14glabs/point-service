@@ -39,6 +39,70 @@ export const findTotalPoint = (user: string) => {
   ]) as unknown as { rank: number, totalPoint: number, holder: string}[]
 }
 
+export const findTotalPointWithEvmAndBabylon = ({
+  evmAddress,
+  babylonAddress
+}: {
+  evmAddress?: string,
+  babylonAddress?: string
+}) => {
+  return Point.aggregate([
+    {
+      $group: {
+        _id: "$holder",
+        totalPoint: { $sum: "$point" }
+      }
+    },
+    {
+      $setWindowFields: {
+        sortBy: { totalPoint: -1 },
+        output: {
+          rank: { $rank: {} }
+        }
+      }
+    },
+    {
+      $match: {
+        _id: { 
+          $in: [evmAddress, babylonAddress].filter(Boolean) 
+        }
+      }
+    },
+    {
+      $group: {
+        _id: null,
+        evmPoint: {
+          $sum: {
+            $cond: [{ $eq: ["$_id", evmAddress] }, "$totalPoint", 0]
+          }
+        },
+        babylonPoint: {
+          $sum: {
+            $cond: [{ $eq: ["$_id", babylonAddress] }, "$totalPoint", 0]
+          }
+        },
+        bestRank: { $min: "$rank" }
+      }
+    },
+    {
+      $addFields: {
+        totalPoint: { $add: ["$evmPoint", "$babylonPoint"] },
+        rank: "$bestRank"
+      }
+    },
+    {
+      $project: {
+        _id: 0,
+        evmPoint: 1,
+        babylonPoint: 1,
+        totalPoint: 1,
+        rank: 1
+      }
+    }
+  ])
+}
+
+
 export const findPoint = (filter: RootFilterQuery<IPoint>) => {
   return Point.findOne(filter)
 }
