@@ -180,7 +180,13 @@ export const getEarnTodayRequest = (holder: string) => {
     $group: {
       _id: null,
       totalPoint: {
-        $sum: "$point"
+          $sum: {
+            $cond: {
+              if: { $eq: ["$type", "dual-core-snapshot"] },
+              then: { $divide: ["$point", 2] },
+              else: "$point"
+            }
+          }
       }
     }
   }
