@@ -24,7 +24,7 @@ app.use('/restake', router)
 mongoose
   .connect(process.env.MONGO_URL, { dbName: 'user' })
   .then(() => {
-    console.log('[DB]: Connected to MongoDB')
+    console.log('======================== ✅ MongoDB connected ========================')
     app.listen(port, async () => {
       console.log(`[server]: Server is running at http://localhost:${port}`)
     })
