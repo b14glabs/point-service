@@ -2,13 +2,12 @@ import { Request, Response } from 'express'
 import Web3 from 'web3'
 import {
   countHolder,
-  findMarketplaceStakers,
+  countUserPoint,
   findRecordsWithPagination,
   findReferral,
   findTotalPoint,
   getEarnTodayRequest,
-  getHolders,
-  getPointLeaderboard,
+  getUserPointLeaderboard,
 } from '../services'
 
 export const getTotalPoint = async (
@@ -106,53 +105,29 @@ export const getLeaderboard = async (
       res.status(400).send({ error: 'Invalid page number' })
       return
     }
-    const snapshotHolders = await getHolders()
 
-    const marketplaceStakers = await findMarketplaceStakers()
-    const users = Array.from(
-      new Set([
-        ...snapshotHolders.map((holder) =>
-          Web3.utils.toChecksumAddress(holder)
-        ),
-        ...marketplaceStakers.map((staker) =>
-          Web3.utils.toChecksumAddress(staker)
-        ),
-      ])
-    )
-    const totalDocument = users.length
+    const [totalDocument, docs] = await Promise.all([
+      countUserPoint(),
+      getUserPointLeaderboard(page, limit),
+    ])
+
     const totalPage = Math.ceil(totalDocument ? totalDocument / limit : 1)
-    const skip = (page - 1) * limit
 
-    let result = (await getPointLeaderboard(page, limit)) as Array<{
-      totalPoint: number
-      holder: string
-      from: Array<string>
-    }>
+    const data = docs.map((el) => ({
+      holder: Web3.utils.toChecksumAddress(el.holder),
+      totalPoint: el.totalPoint,
+      refferFrom: el.refferFrom,
+      from: el.refferFrom ? [el.refferFrom] : [],
+    }))
 
-    result = result.map((el) => {
-      // @ts-ignore
-      el.refferFrom = el.from.length ? el.from[0] : undefined
-      return el
-    })
-    if (skip < users.length && result.length < 10) {
-      const to = skip + (10 - result.length)
-      for (let i = skip; i <= to; i++) {
-        if (users[i]) {
-          result.push({
-            totalPoint: 0,
-            from: [],
-            holder: users[i],
-          })
-        }
-      }
-    }
+    const lastUpdate = docs.length ? docs[0].lastUpdate : null
 
     res.status(200).json({
       totalDocument: totalDocument ? totalDocument : 0,
       totalPage: totalPage,
       page: page,
-      data: result,
-      lastUpdate: new Date(),
+      data,
+      lastUpdate,
     })
   } catch (error) {
     console.error(error)
