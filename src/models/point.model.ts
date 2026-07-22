@@ -73,5 +73,7 @@ pointSchema.index({
   sparse: true
 })
 
+pointSchema.index({ holder: 1, point: 1 })
+
 export type IPoint = InferRawDocType<typeof schemaDefinition>
 export const Point = model('Point', pointSchema)

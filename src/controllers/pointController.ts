@@ -106,6 +106,7 @@ export const getLeaderboard = async (
       res.status(400).send({ error: 'Invalid page number' })
       return
     }
+
     const snapshotHolders = await getHolders()
 
     const marketplaceStakers = await findMarketplaceStakers()

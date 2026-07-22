@@ -6,6 +6,7 @@ import mongoose from 'mongoose'
 import morgan from 'morgan'
 import Web3 from 'web3'
 import pointRoutes from './routes/pointRoutes'
+import { startCronJobs } from './cron'
 
 dotenv.config()
 
@@ -23,9 +24,10 @@ app.use('/restake', router)
 
 mongoose
   .connect(process.env.MONGO_URL, { dbName: 'user' })
-  .then(() => {
+  .then(async () => {
     console.log('======================== ✅ MongoDB connected ========================')
     app.listen(port, async () => {
       console.log(`[server]: Server is running at http://localhost:${port}`)
     })
+    await startCronJobs()
   })
