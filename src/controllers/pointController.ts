@@ -2,12 +2,13 @@ import { Request, Response } from 'express'
 import Web3 from 'web3'
 import {
   countHolder,
-  countUserPoint,
+  findMarketplaceStakers,
   findRecordsWithPagination,
   findReferral,
   findTotalPoint,
   getEarnTodayRequest,
-  getUserPointLeaderboard,
+  getHolders,
+  getPointLeaderboard,
 } from '../services'
 
 export const getTotalPoint = async (
@@ -106,28 +107,53 @@ export const getLeaderboard = async (
       return
     }
 
-    const [totalDocument, docs] = await Promise.all([
-      countUserPoint(),
-      getUserPointLeaderboard(page, limit),
-    ])
+    const snapshotHolders = await getHolders()
 
+    const marketplaceStakers = await findMarketplaceStakers()
+    const users = Array.from(
+      new Set([
+        ...snapshotHolders.map((holder) =>
+          Web3.utils.toChecksumAddress(holder)
+        ),
+        ...marketplaceStakers.map((staker) =>
+          Web3.utils.toChecksumAddress(staker)
+        ),
+      ])
+    )
+    const totalDocument = users.length
     const totalPage = Math.ceil(totalDocument ? totalDocument / limit : 1)
+    const skip = (page - 1) * limit
 
-    const data = docs.map((el) => ({
-      holder: Web3.utils.toChecksumAddress(el.holder),
-      totalPoint: el.totalPoint,
-      refferFrom: el.refferFrom,
-      from: el.refferFrom ? [el.refferFrom] : [],
-    }))
+    let result = (await getPointLeaderboard(page, limit)) as Array<{
+      totalPoint: number
+      holder: string
+      from: Array<string>
+    }>
 
-    const lastUpdate = docs.length ? docs[0].lastUpdate : null
+    result = result.map((el) => {
+      // @ts-ignore
+      el.refferFrom = el.from.length ? el.from[0] : undefined
+      return el
+    })
+    if (skip < users.length && result.length < 10) {
+      const to = skip + (10 - result.length)
+      for (let i = skip; i <= to; i++) {
+        if (users[i]) {
+          result.push({
+            totalPoint: 0,
+            from: [],
+            holder: users[i],
+          })
+        }
+      }
+    }
 
     res.status(200).json({
       totalDocument: totalDocument ? totalDocument : 0,
       totalPage: totalPage,
       page: page,
-      data,
-      lastUpdate,
+      data: result,
+      lastUpdate: new Date(),
     })
   } catch (error) {
     console.error(error)
