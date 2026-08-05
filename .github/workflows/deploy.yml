@@ -4,6 +4,14 @@ on:
   push:
     branches:
       - 'main'
+permissions:
+  id-token: write
+  contents: read
+
+env:
+  AWS_REGION: ap-southeast-1
+  EKS_CLUSTER_NAME: b14g
+
 
 jobs:
   point-service:
@@ -25,20 +33,36 @@ jobs:
         with:
           context: .
           push: true
-          tags: ${{ secrets.DOCKERHUB_USERNAME }}/point-service:latest
-      # Install doctl.
-      - name: Install doctl
-        uses: digitalocean/action-doctl@v2
+          tags: | 
+            ${{ secrets.DOCKERHUB_USERNAME }}/point-service:${{ github.sha }}
+            ${{ secrets.DOCKERHUB_USERNAME }}/point-service:latest
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
         with:
-          token: ${{ secrets.DIGITALOCEAN_ACCESS_TOKEN }}
-      - name: Save DigitalOcean kubeconfig with short-lived credentials
-        run: doctl kubernetes cluster kubeconfig save --expiry-seconds 600 b14g-k8s-2026
+          role-to-assume: arn:aws:iam::602951638934:role/github-action
+          role-session-name: github-actions
+          aws-region: ${{ env.AWS_REGION }}
 
-      - name: Deploy to DigitalOcean Kubernetes
-        run: kubectl apply -f $GITHUB_WORKSPACE/config_/deployment.yml
+      - name: Configure kubeconfig
+        run: |
+          aws eks update-kubeconfig \
+            --name $EKS_CLUSTER_NAME \
+            --region $AWS_REGION
 
-      - name: Deploy deployment/point-service to DigitalOcean Kubernetes
-        run: kubectl rollout restart deployment/point-service
+      - name: Update image
+        run: |
+          kubectl set image deployment/point-service \
+            point-service=${{ secrets.DOCKERHUB_USERNAME }}/point-service:${{ github.sha }}
 
-      - name: Verify deployment
-        run: kubectl rollout status deployment/point-service
+      - name: Wait rollout
+        run: |
+          kubectl rollout status deployment/point-service --timeout=5m
+
+      - name: Show image
+        run: |
+          kubectl get deployment point-service -o=jsonpath='{.spec.template.spec.containers[0].image}'
+          echo
+          
