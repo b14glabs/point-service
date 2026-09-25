@@ -1,0 +1,87 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: point-service-documentdb
+  labels:
+    app: point-service-documentdb
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: point-service-documentdb
+  strategy:
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 1
+    type: RollingUpdate
+  minReadySeconds: 5
+  template:
+    metadata:
+      labels:
+        app: point-service-documentdb
+    spec:
+      containers:
+        - name: point-service-documentdb
+          image: easyprompt2023/point-service-documentdb:latest
+          command: ['node']
+          args: ['dist/index.js']
+          imagePullPolicy: Always
+          env:
+            - name: MONGO_URL
+              valueFrom:
+                secretKeyRef:
+                  name: b14g-mongodb-secret
+                  key: DOCUMENTDB_URL
+            - name: RPC_URL
+              valueFrom:
+                secretKeyRef:
+                  name: point-service
+                  key: RPC_URL
+            - name: MARKETPLACE_ENDPOINT_API
+              valueFrom:
+                secretKeyRef:
+                  name: point-service
+                  key: MARKETPLACE_ENDPOINT_API
+            - name: VERIFY_PUBLIC_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: point-service
+                  key: VERIFY_PUBLIC_KEY
+            - name: VAULT_ENDPOINT_API
+              valueFrom:
+                secretKeyRef:
+                  name: point-service
+                  key: VAULT_ENDPOINT_API
+      imagePullSecrets:
+        - name: cred-docker-hub
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: point-service-documentdb
+spec:
+  ports:
+    - name: http
+      port: 3001
+      targetPort: 3001
+  selector:
+    app: point-service-documentdb
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: point-service-documentdb-ingress
+
+spec:
+  ingressClassName: nginx
+  rules:
+    - host: api-documentdb.b14g.xyz
+      http:
+        paths:
+          - pathType: Prefix
+            path: '/restake/point'
+            backend:
+              service:
+                name: point-service-documentdb
+                port:
+                  number: 3001
