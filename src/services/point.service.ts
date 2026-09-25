@@ -33,7 +33,8 @@ export const findTotalPoint = async (user: string) => {
       },
     },
     {
-      $match: { totalPoint: { $gt: userTotal.totalPoint } },
+      // Exclude the user: summing in a different order can make their own total slightly larger
+      $match: { _id: { $ne: user }, totalPoint: { $gt: userTotal.totalPoint } },
     },
     {
       $count: 'count',
