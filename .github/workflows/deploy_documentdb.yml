@@ -51,10 +51,10 @@ jobs:
             --name $EKS_CLUSTER_NAME \
             --region $AWS_REGION
 
-      - name: Apply manifest with new image
+      - name: Update image
         run: |
-          sed "s#image: .*/point-service-documentdb:latest#image: ${{ secrets.DOCKERHUB_USERNAME }}/point-service-documentdb:${{ github.sha }}#" \
-            config_/deployment_documentdb.yml | kubectl apply -f -
+          kubectl set image deployment/point-service-documentdb \
+            point-service-documentdb=${{ secrets.DOCKERHUB_USERNAME }}/point-service-documentdb:${{ github.sha }}
 
       - name: Wait rollout
         run: |
