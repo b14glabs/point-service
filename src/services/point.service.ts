@@ -7,11 +7,8 @@ const createPoint = (data: IPoint[]) => {
   return Point.insertMany(data, { ordered: false })
 }
 
-export const findTotalPoint = async (user: string) => {
-  const [userTotal] = await Point.aggregate<{ totalPoint: number; holder: string }>([
-    {
-      $match: { holder: user },
-    },
+export const findTotalPoint = (user: string) => {
+  return Point.aggregate<{ rank: number; totalPoint: number; holder: string }>([
     {
       $group: {
         _id: '$holder',
@@ -19,36 +16,18 @@ export const findTotalPoint = async (user: string) => {
         holder: { $first: '$holder' },
       },
     },
-  ])
-
-  if (!userTotal) {
-    return [] as { rank: number; totalPoint: number; holder: string }[]
-  }
-
-  const [ahead] = await Point.aggregate<{ count: number }>([
     {
-      $group: {
-        _id: '$holder',
-        totalPoint: { $sum: '$point' },
+      $setWindowFields: {
+        sortBy: { totalPoint: -1 },
+        output: {
+          rank: { $rank: {} },
+        },
       },
     },
     {
-      // Exclude the user: summing in a different order can make their own total slightly larger
-      $match: { _id: { $ne: user }, totalPoint: { $gt: userTotal.totalPoint } },
-    },
-    {
-      $count: 'count',
+      $match: { _id: user },
     },
   ])
-
-  return [
-    {
-      _id: user,
-      holder: userTotal.holder,
-      totalPoint: userTotal.totalPoint,
-      rank: (ahead ? ahead.count : 0) + 1,
-    },
-  ]
 }
 
 export const findPoint = (filter: RootFilterQuery<IPoint>) => {
