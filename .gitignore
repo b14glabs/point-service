@@ -7,4 +7,5 @@ balances/
 .idea
 src/log/
 src/log/fromBlock
-.codegraph
+/.codegraph
+/scripts
