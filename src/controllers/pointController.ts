@@ -1,11 +1,10 @@
 import { Request, Response } from 'express'
 import Web3 from 'web3'
 import {
-  countHolder,
   countUserPoint,
   findRecordsWithPagination,
   findReferral,
-  findTotalPoint,
+  findUserPointWithRank,
   getEarnTodayRequest,
   getUserPointLeaderboard,
 } from '../services'
@@ -22,15 +21,18 @@ export const getTotalPoint = async (
     const holder = Web3.utils.toChecksumAddress(req.params.holder)
 
     let addressInfo
-    const record = await findTotalPoint(holder.toLowerCase())
-    const refRecord = await findReferral({ to: holder })
-    if (record.length) {
-      addressInfo = record[0]
+    const [record, refRecord] = await Promise.all([
+      findUserPointWithRank(holder.toLowerCase()),
+      // Referral lưu `to` dạng lowercase (xem verifyRef)
+      findReferral({ to: holder.toLowerCase() }),
+    ])
+    if (record) {
+      addressInfo = record
     } else {
-      const totalDocument = await countHolder()
+      const totalDocument = await countUserPoint()
       addressInfo = {
         holder,
-        rank: totalDocument.length ? totalDocument[0]['totalHolders'] + 1 : 0,
+        rank: totalDocument ? totalDocument + 1 : 0,
         totalPoint: 0,
       }
     }

@@ -7,46 +7,12 @@ const createPoint = (data: IPoint[]) => {
   return Point.insertMany(data, { ordered: false })
 }
 
-export const findTotalPoint = (user: string) => {
-  return Point.aggregate<{ rank: number; totalPoint: number; holder: string }>([
-    {
-      $group: {
-        _id: '$holder',
-        totalPoint: { $sum: '$point' },
-        holder: { $first: '$holder' },
-      },
-    },
-    {
-      $setWindowFields: {
-        sortBy: { totalPoint: -1 },
-        output: {
-          rank: { $rank: {} },
-        },
-      },
-    },
-    {
-      $match: { _id: user },
-    },
-  ])
-}
-
 export const findPoint = (filter: RootFilterQuery<IPoint>) => {
   return Point.findOne(filter)
 }
 
 export const getHolders = () => {
   return Point.distinct("holder")
-}
-
-export const countHolder = () => {
-  return Point.aggregate<{ totalHolders: number }>([
-    {
-      $group: { _id: '$holder' },
-    },
-    {
-      $count: 'totalHolders',
-    },
-  ])
 }
 
 export const countRecordsByHolder = (holder: string) => {
