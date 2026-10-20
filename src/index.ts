@@ -23,7 +23,10 @@ router.use('/point', pointRoutes)
 app.use('/restake', router)
 
 mongoose
-  .connect(process.env.MONGO_URL, { dbName: 'user' })
+  .connect(process.env.MONGO_URL, {
+    dbName: 'user',
+    autoIndex: false
+  })
   .then(async () => {
     console.log('======================== ✅ MongoDB connected ========================')
     app.listen(port, async () => {

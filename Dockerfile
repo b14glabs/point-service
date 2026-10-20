@@ -1,7 +1,7 @@
 # Stage 1: Build
 FROM node:22-alpine AS builder
 
-WORKDIR /home/node/app
+WORKDIR /app
 
 COPY package*.json ./
 RUN npm install
@@ -12,13 +12,15 @@ RUN npm run build
 # Stage 2: Runtime
 FROM node:22-alpine
 
-WORKDIR /home/node/app
+WORKDIR /app
+
+RUN mkdir -p /app/certs && \
+    wget -q https://truststore.pki.rds.amazonaws.com/global/global-bundle.pem \
+    -O /app/certs/global-bundle.pem
 
 # Only copy necessary files from the build stage
-COPY --from=builder /home/node/app/dist ./dist
-COPY --from=builder /home/node/app/package*.json ./
-
-RUN mkdir -p /home/node/app/src/log
+COPY --from=builder /app/dist ./dist
+COPY --from=builder /app/package*.json ./
 
 # Install only production dependencies
 RUN npm install --only=production

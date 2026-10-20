@@ -1,8 +1,9 @@
-name: ci
+name: ci-documentdb
 
 on:
   push:
     branches:
+      - 'feat/documentDB'
       - 'main'
 permissions:
   id-token: write
@@ -12,9 +13,8 @@ env:
   AWS_REGION: ap-southeast-1
   EKS_CLUSTER_NAME: b14g
 
-
 jobs:
-  point-service:
+  point-service-documentdb:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -33,9 +33,9 @@ jobs:
         with:
           context: .
           push: true
-          tags: | 
-            ${{ secrets.DOCKERHUB_USERNAME }}/point-service:${{ github.sha }}
-            ${{ secrets.DOCKERHUB_USERNAME }}/point-service:latest
+          tags: |
+            ${{ secrets.DOCKERHUB_USERNAME }}/point-service-documentdb:${{ github.sha }}
+            ${{ secrets.DOCKERHUB_USERNAME }}/point-service-documentdb:latest
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
@@ -54,15 +54,14 @@ jobs:
 
       - name: Update image
         run: |
-          kubectl set image deployment/point-service \
-            point-service=${{ secrets.DOCKERHUB_USERNAME }}/point-service:${{ github.sha }}
+          kubectl set image deployment/point-service-documentdb \
+            point-service-documentdb=${{ secrets.DOCKERHUB_USERNAME }}/point-service-documentdb:${{ github.sha }}
 
       - name: Wait rollout
         run: |
-          kubectl rollout status deployment/point-service --timeout=5m
+          kubectl rollout status deployment/point-service-documentdb --timeout=5m
 
       - name: Show image
         run: |
-          kubectl get deployment point-service -o=jsonpath='{.spec.template.spec.containers[0].image}'
+          kubectl get deployment point-service-documentdb -o=jsonpath='{.spec.template.spec.containers[0].image}'
           echo
-          
